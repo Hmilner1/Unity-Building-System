@@ -1,112 +1,51 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CollisionDetection : MonoBehaviour
 {
-    public delegate void MoveObject();
-    public static event MoveObject OnMoveObject;
+    private float height;
 
+    public delegate void MoveObjectUp();
+    public static event MoveObjectUp OnMoveObjectUp;
+
+    public delegate void MoveObjectDown();
+    public static event MoveObjectDown OnMoveObjectDown;
+
+    private void Awake()
+    {
+        gameObject.AddComponent<BoxCollider>();
+        gameObject.AddComponent<Rigidbody>();
+
+        gameObject.tag = "PrimShape";
+        gameObject.GetComponent<Rigidbody>().isKinematic = true;
+        gameObject.GetComponent<BoxCollider>().isTrigger = true;
+        gameObject.GetComponent<BoxCollider>().size = new Vector3(0.9f, 0.9f, 0.9f);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag != "Ground")
+        {
+            OnMoveObjectUp?.Invoke();
+        }
+    }
     private void Update()
     {
-        //    ForwardCast();
-        //    BackwardsCast();
-        //    LeftCast();
-        //    RightCast();
-        UpCast();   
-        DownCast();
-    }
-
-    //private void ForwardCast()
-    //{
-    //    RaycastHit hit;
-    //    if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, 0.5f))
-    //    {
-    //        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
-            
-    //    }
-    //    else
-    //    {
-    //        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 0.5f, Color.white);
-            
-    //    }
-    //}
-
-    //private void BackwardsCast()
-    //{
-    //    RaycastHit hit;
-    //    if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.back), out hit, 0.5f))
-    //    {
-    //        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.back) * hit.distance, Color.yellow);
-            
-    //    }
-    //    else
-    //    {
-    //        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.back) * 0.5f, Color.white);
-            
-    //    }
-    //}
-
-    //private void LeftCast()
-    //{
-    //    RaycastHit hit;
-    //    if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.left), out hit, 0.5f))
-    //    {
-    //        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.left) * hit.distance, Color.yellow);
-
-    //    }
-    //    else
-    //    {
-    //        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.left) * 0.5f, Color.white);
-
-    //    }
-    //}
-
-    //private void RightCast()
-    //{
-    //    RaycastHit hit;
-    //    if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.right), out hit, 0.5f))
-    //    {
-    //        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * hit.distance, Color.yellow);
-
-    //    }
-    //    else
-    //    {
-    //        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * 0.5f, Color.white);
-
-    //    }
-    //}
-
-    private void UpCast()
-    {
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.up), out hit, 0.4f))
-        {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.up) * hit.distance, Color.yellow);
-            OnMoveObject?.Invoke();
-            Debug.Log("hit");
-        }
-        else
-        {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.up) * 0.4f, Color.white);
-
-        }
-    }
-
-    private void DownCast()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 0.4f))
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 100f))
         {
             Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * hit.distance, Color.yellow);
-            OnMoveObject?.Invoke();
-            Debug.Log("hit");
+            if (hit.collider.tag == "Ground")
+            {
+                OnMoveObjectDown?.Invoke();
+            }
+
         }
         else
         {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * 0.4f, Color.white);
-
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * 100f, Color.white);
         }
     }
-
 }
