@@ -21,6 +21,9 @@ public class CameraManager : MonoBehaviour
     public delegate void CamChanged(GameObject Cam);
     public static event CamChanged OnCamChanged;
 
+    public delegate void Paused();
+    public static event Paused OnPaused;
+
     private void Awake()
     {
         m_FirstPersonCamera = GameObject.Find("FPS Cam Holder");
@@ -53,6 +56,7 @@ public class CameraManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            OnPaused?.Invoke();
             if (m_State != CameraState.Pause)
             {
                 m_State = CameraState.Pause;

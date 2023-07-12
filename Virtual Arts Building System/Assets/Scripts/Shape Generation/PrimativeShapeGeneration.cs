@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
 using UnityEditor.Rendering.LookDev;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
+using UnityEngine.UI;
 using static CollisionDetection;
 
 public class PrimativeShapeGeneration : MonoBehaviour
@@ -17,6 +19,10 @@ public class PrimativeShapeGeneration : MonoBehaviour
     private BuildState m_CurrentState = BuildState.Placed;
     [SerializeField]
     private float desiredHeight = 0.5f;
+    [SerializeField]
+    private Material OutineMat;
+    [SerializeField]
+    private Material Base;
 
     private float m_Distance;
     private GameObject m_CurrentCamera;
@@ -24,21 +30,31 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private float m_TerrainHeight = 0;
     private float m_RayHeight;
+    private Material[] m_MaterialsPlace;
+    private Material[] m_MaterialsEdit;
+    private List<GameObject> m_highlightedObjects;
+    private GameObject test;
+
+    public delegate void Edit();
+    public static event Edit OnEditMode;
+
+    public delegate void ExitEdit();
+    public static event ExitEdit OnExitEditMode;
 
     private void OnEnable()
     {
         ObjectManager.OnSpawnPreviewOject += SpawnHoldObject;
         ObjectManager.OnPlaceObject += PlaceObject;
-        CollisionDetection.OnMoveObjectUp += IncreaseHight;
-        CollisionDetection.OnMoveObjectDown += DecreaseHight;
+        OnMoveObjectUp += IncreaseHight;
+        OnMoveObjectDown += DecreaseHight;
     }
 
     private void OnDisable()
     {
         ObjectManager.OnSpawnPreviewOject -= SpawnHoldObject;
         ObjectManager.OnPlaceObject -= PlaceObject;
-        CollisionDetection.OnMoveObjectUp -= IncreaseHight;
-        CollisionDetection.OnMoveObjectDown -= DecreaseHight;
+        OnMoveObjectUp -= IncreaseHight;
+        OnMoveObjectDown -= DecreaseHight;
     }
 
     private void Awake()
@@ -47,6 +63,10 @@ public class PrimativeShapeGeneration : MonoBehaviour
         {
             m_CurrentCamera = GameObject.Find("FPS Cam Holder");
         }
+
+        m_MaterialsPlace = new Material[] { Base, Base };
+        m_MaterialsEdit = new Material[] { Base, OutineMat };
+        m_highlightedObjects = new List<GameObject>();
     }
 
     private void Update()
@@ -64,10 +84,9 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 MovePreview();
                 break;
             case BuildState.Editing:
-
+                EditingMode();
                 break;
             case BuildState.Placed:
-
                 break;
             default:
                 break;
@@ -136,8 +155,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void PlaceColour()
     {
-        Material matertial = m_HoldObject.GetComponent<Renderer>().material;
-        matertial.color = new Color(0.5f, 0.5f, 0.5f, 1);
+        m_HoldObject.GetComponent<Renderer>().materials = m_MaterialsPlace;
     }
 
     private Vector3 calcSpawnFree()
@@ -190,11 +208,72 @@ public class PrimativeShapeGeneration : MonoBehaviour
             if (hit.collider.gameObject.tag == "PrimShape")
             {
                 m_RayHeight = hit.collider.transform.position.y;
+                if (m_CurrentState == BuildState.Placed)
+                {
+                    //GameObject temp = hit.transform.gameObject;
+                    test = hit.transform.gameObject;
+                    HighlightedObjects(test);
+                    if (Input.GetButtonDown("Fire2"))
+                    { 
+                        m_CurrentState = BuildState.Editing;
+                        OnEditMode?.Invoke();
+                    }
+                }
+            }
+            else
+            {
+                if (test != null)
+                {
+                    if (hit.collider.gameObject != test)
+                    {
+                        ResetMaterial(test);
+                    }
+                }
+            }
+        } 
+    }
+
+    private void HighlightedObjects(GameObject highlightedObject)
+    {
+        highlightedObject.GetComponent<Renderer>().materials = m_MaterialsEdit;
+    }
+
+    private void ResetMaterial(GameObject Object)
+    {
+        Object.GetComponent<Renderer>().materials = m_MaterialsPlace;
+    }
+
+    private GameObject ObjectToEdit()
+    {
+
+        Camera cam = m_CurrentCamera.GetComponentInChildren<Camera>();
+        RaycastHit hit;
+        if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, 100f))
+        {
+            Debug.DrawRay(cam.transform.position, cam.transform.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
+            if (hit.collider.gameObject.tag == "PrimShape")
+            {
+                return hit.collider.gameObject;
             }
         }
         else
         {
-            Debug.DrawRay(cam.transform.position, cam.transform.TransformDirection(Vector3.forward) * 100f, Color.white);
+            return null;
+        }
+        return null;
+    }
+
+    private void EditingMode()
+    {
+        if (Input.GetButtonDown("Fire1"))
+        {
+            if (ObjectToEdit() != null)
+            {
+                m_highlightedObjects.Remove(ObjectToEdit());   
+                Destroy(ObjectToEdit());
+                m_CurrentState = BuildState.Placed;
+                OnExitEditMode?.Invoke();
+            }
         }
     }
 
