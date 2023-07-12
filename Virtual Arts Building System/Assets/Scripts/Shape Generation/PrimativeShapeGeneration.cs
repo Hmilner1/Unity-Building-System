@@ -42,11 +42,11 @@ public class PrimativeShapeGeneration : MonoBehaviour
         switch (m_CurrentState)
         {
             case BuildState.Preview:
-                MovePreview();
                 PreviewEffect();
+                MovePreview();
                 break;
             case BuildState.Placed:
-                
+
                 break;
             default:
                 break;
@@ -55,12 +55,17 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void SpawnHoldObject(float distance, GameObject cam)
     {
-        m_CurrentState = BuildState.Preview;
-        m_Distance = distance;
-        m_CurrentCamera = cam;
-        m_HoldObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        m_HoldObject.transform.position = calcSpawn();
-        m_HoldObject.transform.SetParent(cam.transform);
+        if (m_CurrentState != BuildState.Preview)
+        {
+            m_CurrentState = BuildState.Preview;
+            m_Distance = distance;
+            m_CurrentCamera = cam;
+
+            m_HoldObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            m_HoldObject.transform.position = calcSpawnGrid();
+            m_HoldObject.transform.SetParent(cam.transform);
+
+        }
     }
 
     private void PlaceObject()
@@ -69,6 +74,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         {
             m_CurrentState = BuildState.Placed;
             PlaceColour();
+
             m_HoldObject.transform.SetParent(null, true);
             m_HoldObject = null;
         }
@@ -76,7 +82,17 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void MovePreview()
     {
-        m_HoldObject.transform.position = calcSpawn();
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            m_HoldObject.transform.position = calcSpawnFree();
+        }
+        else
+        {
+            m_HoldObject.transform.position = calcSpawnGrid();
+        }
+      
+        float lockPos = 0;
+        m_HoldObject.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, lockPos, lockPos);
     }
 
     private void PreviewEffect()
@@ -92,7 +108,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         matertial.color = new Color(0.5f, 0.5f, 0.5f, 1);
     }
 
-    private Vector3 calcSpawn()
+    private Vector3 calcSpawnFree()
     {
         Terrain terrain = FindObjectOfType<Terrain>();
         Vector3 camDirection = m_CurrentCamera.transform.forward;
@@ -105,5 +121,21 @@ public class PrimativeShapeGeneration : MonoBehaviour
         Vector3 spawnPos = camPos;
 
         return spawnPos;
+    }
+
+    private Vector3 calcSpawnGrid()
+    {
+        Terrain terrain = FindObjectOfType<Terrain>();
+        Vector3 camDirection = m_CurrentCamera.transform.forward;
+
+        float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
+        float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
+        float spawnY = terrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + desiredHeight;
+
+        Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
+
+        Grid grid = terrain.GetComponent<Grid>();
+        Vector3Int gridPosition = grid.WorldToCell(camPos);
+        return grid.CellToWorld(gridPosition);
     }
 }

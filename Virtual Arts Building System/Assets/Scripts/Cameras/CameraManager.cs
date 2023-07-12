@@ -53,8 +53,18 @@ public class CameraManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            m_State = CameraState.Pause;
-            OnStateChange();
+            if (m_State != CameraState.Pause)
+            {
+                m_State = CameraState.Pause;
+                OnStateChange();
+            }
+            else
+            {
+                Time.timeScale = 1;
+                m_State = CameraState.FirstPerson;
+                OnStateChange();
+                OnCamChanged?.Invoke(m_FirstPersonCamera);
+            }
         }
     }
 
