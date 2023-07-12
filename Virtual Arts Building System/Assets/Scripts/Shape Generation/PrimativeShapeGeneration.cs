@@ -274,18 +274,18 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void EditingMode()
     {
-        if (Input.GetButtonDown("Fire1"))
-        {
-            if (ObjectToEdit() != null)
-            {
-                Destroy(ObjectToEdit());
-                m_CurrentState = BuildState.Placed;
-                OnExitEditMode?.Invoke();
-            }
-        }
-
         if (ObjectToEdit() != null)
         {
+            if (Input.GetButtonDown("Fire1"))
+            {
+                if (ObjectToEdit() != null)
+                {
+                    Destroy(ObjectToEdit());
+                    m_CurrentState = BuildState.Placed;
+                    OnExitEditMode?.Invoke();
+                }
+            }
+
             if (Input.GetButtonDown("Fire2") && !m_isHolding)
             {
                 ObjectToEdit().transform.SetParent(m_CurrentCamera.transform);
@@ -296,6 +296,31 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 ObjectToEdit().transform.SetParent(null, true);
                 m_isHolding = false;
             }
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                ObjectToEdit().transform.Rotate(new Vector3(0, 1, 0), 45.0f, Space.World);
+            }
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                ObjectToEdit().transform.Rotate(new Vector3(0, 0, 1), 45.0f, Space.World);
+            }
+
+            if (Input.GetKey(KeyCode.Y))
+            {
+                float scale = 1;
+
+                scale += (Input.GetAxis("Mouse ScrollWheel"));
+                scale = Mathf.Clamp(scale, -10, 10);
+
+                ObjectToEdit().transform.localScale = new Vector3(ObjectToEdit().transform.localScale.x * scale, ObjectToEdit().transform.localScale.y * scale, ObjectToEdit().transform.localScale.z * scale);
+            }
+
+        }
+        else if (Input.GetButtonDown("Fire1"))
+        {
+            m_CurrentState = BuildState.Placed;
+            OnExitEditMode?.Invoke();
         }
     }
 }
