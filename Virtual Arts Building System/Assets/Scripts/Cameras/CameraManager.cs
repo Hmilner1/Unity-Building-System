@@ -18,6 +18,9 @@ public class CameraManager : MonoBehaviour
     private GameObject m_OverHeadCamera;
     private CameraState m_State;
 
+    public delegate void CamChanged(GameObject Cam);
+    public static event CamChanged OnCamChanged;
+
     private void Awake()
     {
         m_FirstPersonCamera = GameObject.Find("FPS Cam Holder");
@@ -38,12 +41,14 @@ public class CameraManager : MonoBehaviour
         {
             m_State = CameraState.FirstPerson;
             OnStateChange();
+            OnCamChanged?.Invoke(m_FirstPersonCamera);
         }
 
         if (Input.GetKeyDown("2"))
         {
             m_State = CameraState.Overhead;
             OnStateChange();
+            OnCamChanged?.Invoke(m_OverHeadCamera);
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -55,12 +60,6 @@ public class CameraManager : MonoBehaviour
 
     private void OnStateChange()
     {
-        if (m_State == CameraState.FirstPerson)
-        {
-            m_OverHeadCamera.gameObject.SetActive(false);
-            m_FirstPersonCamera.gameObject.SetActive(true);
-        }
-
         switch (m_State)
         {
             case CameraState.FirstPerson:
