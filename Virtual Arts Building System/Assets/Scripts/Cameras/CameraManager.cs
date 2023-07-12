@@ -37,14 +37,14 @@ public class CameraManager : MonoBehaviour
 
     private void UserInput()
     {
-        if (Input.GetKeyDown("1"))
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             m_State = CameraState.FirstPerson;
             OnStateChange();
             OnCamChanged?.Invoke(m_FirstPersonCamera);
         }
 
-        if (Input.GetKeyDown("2"))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             m_State = CameraState.Overhead;
             OnStateChange();

@@ -14,7 +14,7 @@ public class ObjectManager : MonoBehaviour
 
     private GameObject m_currentActiveCam;
 
-    public delegate void SpawnPreviewObject(float distance, GameObject currentCam);
+    public delegate void SpawnPreviewObject(float distance, GameObject currentCam, PrimitiveType type);
     public static event SpawnPreviewObject OnSpawnPreviewOject;
 
     public delegate void PlaceObject();
@@ -41,9 +41,26 @@ public class ObjectManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.C))
+        UserInputs();
+    }
+
+    private void UserInputs()
+    {
+        if (Input.GetKeyDown("1"))
         {
-            OnSpawnPreviewOject?.Invoke(DistanceChanger(), m_currentActiveCam);
+            OnSpawnPreviewOject?.Invoke(DistanceChanger(), m_currentActiveCam, PrimitiveType.Cube);
+        }
+        if (Input.GetKeyDown("2"))
+        {
+            OnSpawnPreviewOject?.Invoke(DistanceChanger(), m_currentActiveCam, PrimitiveType.Sphere);
+        }
+        if (Input.GetKeyDown("3"))
+        {
+            OnSpawnPreviewOject?.Invoke(DistanceChanger(), m_currentActiveCam, PrimitiveType.Cylinder);
+        }
+        if (Input.GetKeyDown("4"))
+        {
+            OnSpawnPreviewOject?.Invoke(DistanceChanger(), m_currentActiveCam, PrimitiveType.Capsule);
         }
 
         if (Input.GetButtonDown("Fire1"))

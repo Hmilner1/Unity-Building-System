@@ -20,16 +20,20 @@ public class PrimativeShapeGeneration : MonoBehaviour
     private GameObject m_CurrentCamera;
     private GameObject m_HoldObject;
 
+    private float m_TerrainHeight = 0;
+
     private void OnEnable()
     {
         ObjectManager.OnSpawnPreviewOject += SpawnHoldObject;
         ObjectManager.OnPlaceObject += PlaceObject;
+        CollisionDetection.OnMoveObject += IncreaseHight;
     }
 
     private void OnDisable()
     {
         ObjectManager.OnSpawnPreviewOject -= SpawnHoldObject;
         ObjectManager.OnPlaceObject -= PlaceObject;
+        CollisionDetection.OnMoveObject -= IncreaseHight;
     }
 
     private void Update()
@@ -53,7 +57,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         }
     }
 
-    private void SpawnHoldObject(float distance, GameObject cam)
+    private void SpawnHoldObject(float distance, GameObject cam, PrimitiveType type)
     {
         if (m_CurrentState != BuildState.Preview)
         {
@@ -61,10 +65,10 @@ public class PrimativeShapeGeneration : MonoBehaviour
             m_Distance = distance;
             m_CurrentCamera = cam;
 
-            m_HoldObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            m_HoldObject = GameObject.CreatePrimitive(type);
+            m_HoldObject.AddComponent<CollisionDetection>();
             m_HoldObject.transform.position = calcSpawnGrid();
             m_HoldObject.transform.SetParent(cam.transform);
-
         }
     }
 
@@ -74,6 +78,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         {
             m_CurrentState = BuildState.Placed;
             PlaceColour();
+            m_HoldObject.GetComponent<CollisionDetection>().enabled = false;
 
             m_HoldObject.transform.SetParent(null, true);
             m_HoldObject = null;
@@ -85,6 +90,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftShift))
         {
             m_HoldObject.transform.position = calcSpawnFree();
+            
         }
         else
         {
@@ -115,7 +121,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
         float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
         float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
-        float spawnY = terrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + desiredHeight;
+        float spawnY = terrain.SampleHeight(new Vector3(spawnX, m_TerrainHeight, spawnZ)) + desiredHeight;
 
         Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
         Vector3 spawnPos = camPos;
@@ -130,12 +136,17 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
         float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
         float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
-        float spawnY = terrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + desiredHeight;
+        float spawnY = terrain.SampleHeight(new Vector3(spawnX, m_TerrainHeight, spawnZ)) + desiredHeight;
 
         Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
 
         Grid grid = terrain.GetComponent<Grid>();
         Vector3Int gridPosition = grid.WorldToCell(camPos);
         return grid.CellToWorld(gridPosition);
+    }
+
+    private void IncreaseHight()
+    {
+        m_TerrainHeight = m_TerrainHeight + 100;
     }
 }
