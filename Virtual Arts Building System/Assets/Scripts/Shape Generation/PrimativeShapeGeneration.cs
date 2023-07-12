@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEditor.Rendering.LookDev;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
+using UnityEngine.Experimental.XR.Interaction;
 using UnityEngine.UI;
 using static CollisionDetection;
 
@@ -32,8 +33,8 @@ public class PrimativeShapeGeneration : MonoBehaviour
     private float m_RayHeight;
     private Material[] m_MaterialsPlace;
     private Material[] m_MaterialsEdit;
-    private List<GameObject> m_highlightedObjects;
-    private GameObject test;
+    private GameObject Highlight;
+    private bool m_isHolding;
 
     public delegate void Edit();
     public static event Edit OnEditMode;
@@ -66,7 +67,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
         m_MaterialsPlace = new Material[] { Base, Base };
         m_MaterialsEdit = new Material[] { Base, OutineMat };
-        m_highlightedObjects = new List<GameObject>();
+        m_isHolding = false;
     }
 
     private void Update()
@@ -95,26 +96,34 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void SpawnHoldObject(float distance, GameObject cam, PrimitiveType type)
     {
+
         if (m_CurrentState != BuildState.Preview)
         {
-            m_CurrentState = BuildState.Preview;
-            m_Distance = distance;
-            m_CurrentCamera = cam;
-
-            m_HoldObject = GameObject.CreatePrimitive(type);
-
-            if (type != PrimitiveType.Cube)
+            if (m_CurrentState == BuildState.Editing)
             {
-                Destroy(m_HoldObject.GetComponent<Collider>());
+                return;
             }
-            else if (type == PrimitiveType.Cube)
+            else
             {
-                m_HoldObject.GetComponent<BoxCollider>().size = new Vector3(0.9f, 0.9f, 0.9f);
-            }
+                m_CurrentState = BuildState.Preview;
+                m_Distance = distance;
+                m_CurrentCamera = cam;
 
-            m_HoldObject.AddComponent<CollisionDetection>();
-            m_HoldObject.transform.position = calcSpawnGrid();
-            m_HoldObject.transform.SetParent(cam.transform);
+                m_HoldObject = GameObject.CreatePrimitive(type);
+
+                if (type != PrimitiveType.Cube)
+                {
+                    Destroy(m_HoldObject.GetComponent<Collider>());
+                }
+                else if (type == PrimitiveType.Cube)
+                {
+                    m_HoldObject.GetComponent<BoxCollider>().size = new Vector3(0.9f, 0.9f, 0.9f);
+                }
+
+                m_HoldObject.AddComponent<CollisionDetection>();
+                m_HoldObject.transform.position = calcSpawnGrid();
+                m_HoldObject.transform.SetParent(cam.transform);
+            }
         }
     }
 
@@ -211,8 +220,8 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 if (m_CurrentState == BuildState.Placed)
                 {
                     //GameObject temp = hit.transform.gameObject;
-                    test = hit.transform.gameObject;
-                    HighlightedObjects(test);
+                    Highlight = hit.transform.gameObject;
+                    HighlightedObjects(Highlight);
                     if (Input.GetButtonDown("Fire2"))
                     { 
                         m_CurrentState = BuildState.Editing;
@@ -222,11 +231,11 @@ public class PrimativeShapeGeneration : MonoBehaviour
             }
             else
             {
-                if (test != null)
+                if (Highlight != null)
                 {
-                    if (hit.collider.gameObject != test)
+                    if (hit.collider.gameObject != Highlight)
                     {
-                        ResetMaterial(test);
+                        ResetMaterial(Highlight);
                     }
                 }
             }
@@ -269,12 +278,22 @@ public class PrimativeShapeGeneration : MonoBehaviour
         {
             if (ObjectToEdit() != null)
             {
-                m_highlightedObjects.Remove(ObjectToEdit());   
                 Destroy(ObjectToEdit());
                 m_CurrentState = BuildState.Placed;
                 OnExitEditMode?.Invoke();
             }
         }
-    }
 
+        if (Input.GetButtonDown("Fire2") && !m_isHolding)
+        {
+            ObjectToEdit().transform.SetParent(m_CurrentCamera.transform);
+            m_isHolding = true;
+        }
+        else if (Input.GetButtonDown("Fire2") && m_isHolding)
+        {
+            ObjectToEdit().transform.SetParent(null, true);
+            m_isHolding = false;
+        }
+
+    }
 }
