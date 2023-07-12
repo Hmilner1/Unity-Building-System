@@ -46,10 +46,10 @@ public class ObjectManager : MonoBehaviour
             OnSpawnPreviewOject?.Invoke(DistanceChanger(), m_currentActiveCam);
         }
 
-        //if (Input.GetKeyDown("Fire 1"))
-        //{
-        //    OnPlaceObject?.Invoke();
-        //}
+        if (Input.GetButtonDown("Fire1"))
+        {
+            OnPlaceObject?.Invoke();
+        }
     }
 
     private void UpdateCurrentCam(GameObject Cam)

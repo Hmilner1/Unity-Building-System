@@ -50,7 +50,7 @@ public class FirstPersonCamera : MonoBehaviour
     void MouseMovement()
     {
         Vector2 mouseTarget = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
-        m_CurrentMouse = Vector2.SmoothDamp(m_CurrentMouse, mouseTarget, ref m_CurrentMouseVelocity, 0.3f);
+        m_CurrentMouse = Vector2.SmoothDamp(m_CurrentMouse, mouseTarget, ref m_CurrentMouseVelocity, 0.1f);
 
         m_CameraCap -= m_CurrentMouse.y * mouseSensitivity;
         m_CameraCap = Mathf.Clamp(m_CameraCap, -90.0f, 90.0f);

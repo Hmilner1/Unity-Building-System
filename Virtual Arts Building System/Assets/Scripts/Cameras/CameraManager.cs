@@ -66,18 +66,14 @@ public class CameraManager : MonoBehaviour
                 m_OverHeadCamera.gameObject.SetActive(false);
                 m_FirstPersonCamera.gameObject.SetActive(true);
                 break;
-
             case CameraState.Overhead:
                 m_OverHeadCamera.gameObject.SetActive(true);
                 m_FirstPersonCamera.gameObject.SetActive(false);
                 break;
-
             case CameraState.Pause:
                 GamePause();
                 break;
-
             default:
-
                 break;
         }
     }

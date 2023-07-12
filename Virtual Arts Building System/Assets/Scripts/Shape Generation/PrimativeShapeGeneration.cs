@@ -1,11 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Rendering.LookDev;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
 public class PrimativeShapeGeneration : MonoBehaviour
 {
+    enum BuildState
+    { 
+        Preview,
+        Placed
+    }
+    private BuildState m_CurrentState = BuildState.Placed;
     [SerializeField]
     private float desiredHeight = 0.5f;
 
@@ -27,17 +34,30 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void Update()
     {
-        if (m_HoldObject != null)
+        OnStateChange();
+    }
+
+    private void OnStateChange()
+    {
+        switch (m_CurrentState)
         {
-            m_HoldObject.transform.position = calcSpawn();
+            case BuildState.Preview:
+                MovePreview();
+                PreviewEffect();
+                break;
+            case BuildState.Placed:
+                
+                break;
+            default:
+                break;
         }
     }
 
     private void SpawnHoldObject(float distance, GameObject cam)
     {
+        m_CurrentState = BuildState.Preview;
         m_Distance = distance;
         m_CurrentCamera = cam;
-
         m_HoldObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
         m_HoldObject.transform.position = calcSpawn();
         m_HoldObject.transform.SetParent(cam.transform);
@@ -45,7 +65,31 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void PlaceObject()
     {
-        m_HoldObject.transform.SetParent(null, true);
+        if (m_CurrentState == BuildState.Preview)
+        {
+            m_CurrentState = BuildState.Placed;
+            PlaceColour();
+            m_HoldObject.transform.SetParent(null, true);
+            m_HoldObject = null;
+        }
+    }
+
+    private void MovePreview()
+    {
+        m_HoldObject.transform.position = calcSpawn();
+    }
+
+    private void PreviewEffect()
+    { 
+        Material matertial = m_HoldObject.GetComponent<Renderer>().material;
+        matertial.color = new Color(0, 1, 0, 0);
+    
+    }
+
+    private void PlaceColour()
+    {
+        Material matertial = m_HoldObject.GetComponent<Renderer>().material;
+        matertial.color = new Color(0.5f, 0.5f, 0.5f, 1);
     }
 
     private Vector3 calcSpawn()
