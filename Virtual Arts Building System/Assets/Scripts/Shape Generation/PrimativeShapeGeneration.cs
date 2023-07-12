@@ -82,7 +82,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         {
             case BuildState.Preview:
                 PreviewEffect();
-                MovePreview();
+                MovePreview(m_HoldObject);
                 break;
             case BuildState.Editing:
                 EditingMode();
@@ -139,16 +139,16 @@ public class PrimativeShapeGeneration : MonoBehaviour
         }
     }
 
-    private void MovePreview()
+    private void MovePreview(GameObject moveingObject)
     {
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            m_HoldObject.transform.position = calcSpawnFree();
+            moveingObject.transform.position = calcSpawnFree();
             
         }
         else
         {
-            m_HoldObject.transform.position = calcSpawnGrid();
+            moveingObject.transform.position = calcSpawnGrid();
         }
       
         float lockPos = 0;
@@ -284,16 +284,18 @@ public class PrimativeShapeGeneration : MonoBehaviour
             }
         }
 
-        if (Input.GetButtonDown("Fire2") && !m_isHolding)
+        if (ObjectToEdit() != null)
         {
-            ObjectToEdit().transform.SetParent(m_CurrentCamera.transform);
-            m_isHolding = true;
+            if (Input.GetButtonDown("Fire2") && !m_isHolding)
+            {
+                ObjectToEdit().transform.SetParent(m_CurrentCamera.transform);
+                m_isHolding = true;
+            }
+            else if (Input.GetButtonDown("Fire2") && m_isHolding)
+            {
+                ObjectToEdit().transform.SetParent(null, true);
+                m_isHolding = false;
+            }
         }
-        else if (Input.GetButtonDown("Fire2") && m_isHolding)
-        {
-            ObjectToEdit().transform.SetParent(null, true);
-            m_isHolding = false;
-        }
-
     }
 }
