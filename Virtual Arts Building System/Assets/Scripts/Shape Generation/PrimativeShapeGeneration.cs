@@ -11,6 +11,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
     enum BuildState
     { 
         Preview,
+        Editing,
         Placed
     }
     private BuildState m_CurrentState = BuildState.Placed;
@@ -61,6 +62,9 @@ public class PrimativeShapeGeneration : MonoBehaviour
             case BuildState.Preview:
                 PreviewEffect();
                 MovePreview();
+                break;
+            case BuildState.Editing:
+
                 break;
             case BuildState.Placed:
 
