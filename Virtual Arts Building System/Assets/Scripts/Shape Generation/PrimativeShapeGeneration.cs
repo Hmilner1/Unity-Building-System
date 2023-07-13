@@ -171,33 +171,67 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private Vector3 calcSpawnFree()
     {
-        Terrain terrain = FindObjectOfType<Terrain>();
-        Vector3 camDirection = m_CurrentCamera.transform.forward;
+        if (m_TerrainHeight <= 0)
+        {
+            Terrain terrain = FindObjectOfType<Terrain>();
+            Vector3 camDirection = m_CurrentCamera.transform.forward;
 
-        float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
-        float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
-        float spawnY = terrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + desiredHeight + m_TerrainHeight;
+            float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
+            float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
+            float spawnY = terrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + desiredHeight + m_TerrainHeight;
 
-        Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
-        Vector3 spawnPos = camPos;
+            Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
+            Vector3 spawnPos = camPos;
 
-        return spawnPos;
+            return spawnPos;
+        }
+        else 
+        {
+            Vector3 camDirection = m_CurrentCamera.transform.forward;
+
+            float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
+            float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
+            float spawnY = desiredHeight + m_TerrainHeight;
+
+            Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
+            Vector3 spawnPos = camPos;
+
+            return spawnPos;
+        }
     }
 
     private Vector3 calcSpawnGrid()
     {
-        Terrain terrain = FindObjectOfType<Terrain>();
-        Vector3 camDirection = m_CurrentCamera.transform.forward;
+        if (m_TerrainHeight <= 0)
+        {
+            Terrain terrain = FindObjectOfType<Terrain>();
+            Vector3 camDirection = m_CurrentCamera.transform.forward;
 
-        float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
-        float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
-        float spawnY = terrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + desiredHeight + m_TerrainHeight;
+            float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
+            float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
+            float spawnY = terrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + desiredHeight + m_TerrainHeight;
 
-        Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
+            Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
 
-        Grid grid = terrain.GetComponent<Grid>();
-        Vector3Int gridPosition = grid.WorldToCell(camPos);
-        return grid.CellToWorld(gridPosition);
+            Grid grid = terrain.GetComponent<Grid>();
+            Vector3Int gridPosition = grid.WorldToCell(camPos);
+            return grid.CellToWorld(gridPosition);
+        }
+        else 
+        {
+            Terrain terrain = FindObjectOfType<Terrain>();
+            Vector3 camDirection = m_CurrentCamera.transform.forward;
+
+            float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
+            float spawnZ = m_CurrentCamera.transform.position.z + camDirection.z * m_Distance;
+            float spawnY = desiredHeight + m_TerrainHeight;
+
+            Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
+
+            Grid grid = terrain.GetComponent<Grid>();
+            Vector3Int gridPosition = grid.WorldToCell(camPos);
+            return grid.CellToWorld(gridPosition);
+        }
     }
 
     private void IncreaseHight()
