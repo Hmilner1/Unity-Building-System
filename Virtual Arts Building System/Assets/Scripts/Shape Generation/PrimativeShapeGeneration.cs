@@ -35,6 +35,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
     private Material[] m_MaterialsEdit;
     private GameObject Highlight;
     private bool m_isHolding;
+    private int m_MatNum;
 
     public delegate void Edit();
     public static event Edit OnEditMode;
@@ -68,6 +69,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         m_MaterialsPlace = new Material[] { Base, Base };
         m_MaterialsEdit = new Material[] { Base, OutineMat };
         m_isHolding = false;
+        m_MatNum = 0;
     }
 
     private void Update()
@@ -219,7 +221,6 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 m_RayHeight = hit.collider.transform.position.y;
                 if (m_CurrentState == BuildState.Placed)
                 {
-                    //GameObject temp = hit.transform.gameObject;
                     Highlight = hit.transform.gameObject;
                     HighlightedObjects(Highlight);
                     if (Input.GetButtonDown("Fire2"))
@@ -316,6 +317,19 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 ObjectToEdit().transform.localScale = new Vector3(ObjectToEdit().transform.localScale.x * scale, ObjectToEdit().transform.localScale.y * scale, ObjectToEdit().transform.localScale.z * scale);
             }
 
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                Color[] colours = { Color.white, Color.red, Color.gray, Color.black, Color.blue, Color.yellow };
+                if (m_MatNum <= colours.Length - 2 )
+                {
+                    m_MatNum++;
+                }
+                else
+                {
+                    m_MatNum = 0;
+                }
+                Base.color = colours[m_MatNum];
+            }
         }
         else if (Input.GetButtonDown("Fire1"))
         {
