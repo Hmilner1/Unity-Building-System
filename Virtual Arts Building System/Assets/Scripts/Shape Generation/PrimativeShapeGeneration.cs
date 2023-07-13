@@ -17,6 +17,8 @@ public class PrimativeShapeGeneration : MonoBehaviour
     private Material OutineMat;
     [SerializeField]
     private Material Base;
+    [SerializeField]
+    private Material PreviewMat;
 
     private bool m_isHolding;
     private int m_MatNum;
@@ -148,8 +150,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void PreviewEffect()
     { 
-        Material matertial = m_HoldObject.GetComponent<Renderer>().material;
-        matertial.color = new Color(0, 1, 0, 0);
+        m_HoldObject.GetComponent<Renderer>().material = PreviewMat;
     }
 
     private void PlaceColour()
