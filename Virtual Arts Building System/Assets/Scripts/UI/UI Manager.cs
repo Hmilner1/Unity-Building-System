@@ -34,7 +34,6 @@ public class UIManager : MonoBehaviour
     {
         m_EditCanvas.gameObject.SetActive(false);
         m_PauseCanvas.gameObject.SetActive(false);
-
         m_IsPaused = false;
     }
 

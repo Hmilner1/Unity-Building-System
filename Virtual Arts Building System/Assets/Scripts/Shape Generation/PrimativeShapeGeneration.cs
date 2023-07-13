@@ -1,12 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
-using Unity.VisualScripting;
-using UnityEditor.Rendering.LookDev;
-using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
-using UnityEngine.Experimental.XR.Interaction;
-using UnityEngine.UI;
 using static CollisionDetection;
 
 public class PrimativeShapeGeneration : MonoBehaviour
@@ -17,7 +9,8 @@ public class PrimativeShapeGeneration : MonoBehaviour
         Editing,
         Placed
     }
-    private BuildState m_CurrentState = BuildState.Placed;
+    private BuildState m_CurrentState;
+
     [SerializeField]
     private float desiredHeight = 0.5f;
     [SerializeField]
@@ -25,17 +18,16 @@ public class PrimativeShapeGeneration : MonoBehaviour
     [SerializeField]
     private Material Base;
 
-    private float m_Distance;
-    private GameObject m_CurrentCamera;
-    private GameObject m_HoldObject;
-
-    private float m_TerrainHeight = 0;
-    private float m_RayHeight;
-    private Material[] m_MaterialsPlace;
-    private Material[] m_MaterialsEdit;
-    private GameObject Highlight;
     private bool m_isHolding;
     private int m_MatNum;
+    private float m_Distance;
+    private float m_TerrainHeight = 0;
+    private float m_RayHeight;
+    private GameObject m_CurrentCamera;
+    private GameObject m_HoldObject;
+    private GameObject Highlight;
+    private Material[] m_MaterialsPlace;
+    private Material[] m_MaterialsEdit;
 
     public delegate void Edit();
     public static event Edit OnEditMode;
@@ -61,11 +53,8 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void Awake()
     {
-        if (m_CurrentCamera == null)
-        {
-            m_CurrentCamera = GameObject.Find("FPS Cam Holder");
-        }
-
+        m_CurrentState = BuildState.Placed;
+        m_CurrentCamera = GameObject.Find("FPS Cam Holder");
         m_MaterialsPlace = new Material[] { Base, Base };
         m_MaterialsEdit = new Material[] { Base, OutineMat };
         m_isHolding = false;
@@ -96,9 +85,9 @@ public class PrimativeShapeGeneration : MonoBehaviour
         }
     }
 
+    //Inital creation of the shape type of object and current cam called from Object Manager
     private void SpawnHoldObject(float distance, GameObject cam, PrimitiveType type)
     {
-
         if (m_CurrentState != BuildState.Preview)
         {
             if (m_CurrentState == BuildState.Editing)
@@ -110,9 +99,9 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 m_CurrentState = BuildState.Preview;
                 m_Distance = distance;
                 m_CurrentCamera = cam;
-
                 m_HoldObject = GameObject.CreatePrimitive(type);
 
+                //if cube changes size of collider others have colliders created in Collision detection
                 if (type != PrimitiveType.Cube)
                 {
                     Destroy(m_HoldObject.GetComponent<Collider>());
@@ -123,7 +112,6 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 }
 
                 m_HoldObject.AddComponent<CollisionDetection>();
-                m_HoldObject.transform.position = calcSpawnGrid();
                 m_HoldObject.transform.SetParent(cam.transform);
             }
         }
@@ -143,6 +131,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void MovePreview(GameObject moveingObject)
     {
+        //Changes Movement options
         if (Input.GetKey(KeyCode.LeftShift))
         {
             moveingObject.transform.position = calcSpawnFree();
@@ -152,7 +141,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         {
             moveingObject.transform.position = calcSpawnGrid();
         }
-      
+        //Locks rotation
         float lockPos = 0;
         m_HoldObject.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, lockPos, lockPos);
     }
@@ -161,7 +150,6 @@ public class PrimativeShapeGeneration : MonoBehaviour
     { 
         Material matertial = m_HoldObject.GetComponent<Renderer>().material;
         matertial.color = new Color(0, 1, 0, 0);
-    
     }
 
     private void PlaceColour()
@@ -173,6 +161,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
     {
         if (m_TerrainHeight <= 0)
         {
+            //returns ground level if not on another object
             Terrain terrain = FindObjectOfType<Terrain>();
             Vector3 camDirection = m_CurrentCamera.transform.forward;
 
@@ -187,6 +176,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
         }
         else 
         {
+            //returns the locations ontop of object
             Vector3 camDirection = m_CurrentCamera.transform.forward;
 
             float spawnX = m_CurrentCamera.transform.position.x + camDirection.x * m_Distance;
@@ -195,7 +185,6 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
             Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
             Vector3 spawnPos = camPos;
-
             return spawnPos;
         }
     }
@@ -204,6 +193,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
     {
         if (m_TerrainHeight <= 0)
         {
+            //returns ground level if not on another object
             Terrain terrain = FindObjectOfType<Terrain>();
             Vector3 camDirection = m_CurrentCamera.transform.forward;
 
@@ -212,13 +202,13 @@ public class PrimativeShapeGeneration : MonoBehaviour
             float spawnY = terrain.SampleHeight(new Vector3(spawnX, 0, spawnZ)) + desiredHeight + m_TerrainHeight;
 
             Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
-
             Grid grid = terrain.GetComponent<Grid>();
             Vector3Int gridPosition = grid.WorldToCell(camPos);
             return grid.CellToWorld(gridPosition);
         }
         else 
         {
+            //returns the locations ontop of object 
             Terrain terrain = FindObjectOfType<Terrain>();
             Vector3 camDirection = m_CurrentCamera.transform.forward;
 
@@ -227,7 +217,6 @@ public class PrimativeShapeGeneration : MonoBehaviour
             float spawnY = desiredHeight + m_TerrainHeight;
 
             Vector3 camPos = new Vector3(spawnX, spawnY, spawnZ);
-
             Grid grid = terrain.GetComponent<Grid>();
             Vector3Int gridPosition = grid.WorldToCell(camPos);
             return grid.CellToWorld(gridPosition);
@@ -238,6 +227,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
     {
         m_TerrainHeight = m_RayHeight + 0.5f;
     }
+
     private void DecreaseHight()
     {
         m_TerrainHeight = 0;
@@ -245,6 +235,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private void ObjectSelection()
     {
+        //raycast from current cam to return hight and object to be edited 
         Camera cam = m_CurrentCamera.GetComponentInChildren<Camera>();
         RaycastHit hit;
         if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, 100f))
@@ -252,11 +243,14 @@ public class PrimativeShapeGeneration : MonoBehaviour
             Debug.DrawRay(cam.transform.position, cam.transform.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
             if (hit.collider.gameObject.tag == "PrimShape")
             {
+                //sets hight
                 m_RayHeight = hit.collider.transform.position.y;
                 if (m_CurrentState == BuildState.Placed)
                 {
+                    //highlights object
                     Highlight = hit.transform.gameObject;
                     HighlightedObjects(Highlight);
+                    //starts edit mode 
                     if (Input.GetButtonDown("Fire2"))
                     { 
                         m_CurrentState = BuildState.Editing;
@@ -266,6 +260,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
             }
             else
             {
+                //removes highlight
                 if (Highlight != null)
                 {
                     if (hit.collider.gameObject != Highlight)
@@ -289,7 +284,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
 
     private GameObject ObjectToEdit()
     {
-
+        //returns the object to be edited
         Camera cam = m_CurrentCamera.GetComponentInChildren<Camera>();
         RaycastHit hit;
         if (Physics.Raycast(cam.transform.position, cam.transform.TransformDirection(Vector3.forward), out hit, 100f))
@@ -306,11 +301,12 @@ public class PrimativeShapeGeneration : MonoBehaviour
         }
         return null;
     }
-
+    //edit mode
     private void EditingMode()
     {
         if (ObjectToEdit() != null)
         {
+            //Delete Object
             if (Input.GetButtonDown("Fire1"))
             {
                 if (ObjectToEdit() != null)
@@ -320,7 +316,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
                     OnExitEditMode?.Invoke();
                 }
             }
-
+            //Move Object
             if (Input.GetButtonDown("Fire2") && !m_isHolding)
             {
                 ObjectToEdit().transform.SetParent(m_CurrentCamera.transform);
@@ -331,26 +327,28 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 ObjectToEdit().transform.SetParent(null, true);
                 m_isHolding = false;
             }
-
+            //Rotate Object
             if (Input.GetKeyDown(KeyCode.R))
             {
+                //rotate 45 degree on the Y axis
                 ObjectToEdit().transform.Rotate(new Vector3(0, 1, 0), 45.0f, Space.World);
             }
             if (Input.GetKeyDown(KeyCode.T))
             {
+                //rotate 45 degree on the Z axis 
                 ObjectToEdit().transform.Rotate(new Vector3(0, 0, 1), 45.0f, Space.World);
             }
-
+            //Resize Object
             if (Input.GetKey(KeyCode.Y))
             {
                 float scale = 1;
-
+                //sets the scale base off the scrollwheel
                 scale += (Input.GetAxis("Mouse ScrollWheel"));
                 scale = Mathf.Clamp(scale, -10, 10);
 
                 ObjectToEdit().transform.localScale = new Vector3(ObjectToEdit().transform.localScale.x * scale, ObjectToEdit().transform.localScale.y * scale, ObjectToEdit().transform.localScale.z * scale);
             }
-
+            //change the objects material colour
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
                 Color[] colours = { Color.white, Color.red, Color.gray, Color.black, Color.blue, Color.yellow };
@@ -365,6 +363,7 @@ public class PrimativeShapeGeneration : MonoBehaviour
                 Base.color = colours[m_MatNum];
             }
         }
+        //exit edit mode
         else if (Input.GetButtonDown("Fire1"))
         {
             m_CurrentState = BuildState.Placed;

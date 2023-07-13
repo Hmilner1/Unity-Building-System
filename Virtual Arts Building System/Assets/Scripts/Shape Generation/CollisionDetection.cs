@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class CollisionDetection : MonoBehaviour
 {
-    private float height;
-
     public delegate void MoveObjectUp();
     public static event MoveObjectUp OnMoveObjectUp;
 
@@ -15,10 +13,9 @@ public class CollisionDetection : MonoBehaviour
 
     private void Awake()
     {
+        gameObject.tag = "PrimShape";
         gameObject.AddComponent<BoxCollider>();
         gameObject.AddComponent<Rigidbody>();
-
-        gameObject.tag = "PrimShape";
         gameObject.GetComponent<Rigidbody>().isKinematic = true;
         gameObject.GetComponent<BoxCollider>().isTrigger = true;
         gameObject.GetComponent<BoxCollider>().size = new Vector3(0.9f, 0.9f, 0.9f);
@@ -26,13 +23,16 @@ public class CollisionDetection : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        //move object if there is a collision
         if (other.gameObject.tag != "Ground")
         {
             OnMoveObjectUp?.Invoke();
         }
     }
+
     private void Update()
     {
+        //Moves object to the floor if there is no other objects below them 
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 100f))
         {
@@ -41,7 +41,6 @@ public class CollisionDetection : MonoBehaviour
             {
                 OnMoveObjectDown?.Invoke();
             }
-
         }
         else
         {

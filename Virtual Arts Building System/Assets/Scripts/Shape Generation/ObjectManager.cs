@@ -10,8 +10,6 @@ public class ObjectManager : MonoBehaviour
     private float m_SetDistance;
 
     private float m_ActualDistance;
-
-
     private GameObject m_currentActiveCam;
 
     public delegate void SpawnPreviewObject(float distance, GameObject currentCam, PrimitiveType type);
@@ -62,7 +60,6 @@ public class ObjectManager : MonoBehaviour
         {
             OnSpawnPreviewOject?.Invoke(DistanceChanger(), m_currentActiveCam, PrimitiveType.Capsule);
         }
-
         if (Input.GetButtonDown("Fire1"))
         {
             OnPlaceObject?.Invoke();
@@ -85,7 +82,6 @@ public class ObjectManager : MonoBehaviour
         {
             m_ActualDistance = 0;
         }
-
         return m_ActualDistance;
     }
 }
